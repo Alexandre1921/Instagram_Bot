@@ -1,0 +1,12 @@
+{
+  "name": "Instagram_Bot",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "repository": "https://github.com/Alexandre1921/Instagram_Bot.git",
+  "author": "Alexandre & Amyr",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "puppeteer": "^5.2.1"
+  }
+}
