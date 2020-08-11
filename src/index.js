@@ -58,9 +58,39 @@ const pages = require("../pages");
   await page.waitForSelector("body > div.RnEpo.Yx5HN > div > div > div.isgrP");
 
   await page.evaluate((selector) => {
+    let followQtd = Number(
+      // coleta a string com numero de seguindo, troca o ponto por vazio, e por fim transforma em numero
+      document
+        .querySelector(
+          "#react-root > section > main > div > header > section > ul > li:nth-child(3) > a > span"
+        )
+        .innerHTML.replace(".", "")
+    );
+    let followList = [];
     const scrollableSection = document.querySelector(selector);
+    document.body.addEventListener(
+      "DOMSubtreeModified",
+      function () {
+        scrollableSection.scrollTop += 6000; // faz scroll down
 
-    scrollableSection.scrollTop = scrollableSection.offsetHeight;
+        followList = Array.from(
+          document.querySelectorAll(
+            "body > div.RnEpo.Yx5HN > div > div > div.isgrP > ul > div > li"
+          )
+        );
+        if (followList.length == followQtd) {
+          followList = followList.map(
+            (user) =>
+              user.querySelector("div > div.t2ksc > .enpQJ > .d7ByH > span > a")
+                .innerHTML
+          );
+          console.log(followList);
+        } else {
+          console.log("Testing");
+        }
+      },
+      false
+    );
   }, scrollable_section);
   // await browser.close();
 })();
