@@ -3,7 +3,6 @@ const pages = require("../pages");
 
 (async () => {
   //array de páginas alvo
-  console.log(pages);
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
@@ -35,62 +34,55 @@ const pages = require("../pages");
   await page.click(
     "#react-root > section > main > article > div.EZdmt > div > div > div:nth-child(1) > div:nth-child(1) > a"
   );
-
+  //'#react-root > section > main > article > div.EZdmt > div > div > div > div > a'
   await page.waitForSelector(
     "body > div._2dDPU.CkGkG > div.zZYga > div > article > header > div.o-MQd.z8cbW > div.PQo_0.RqtMr > div.e1e1d > span > a"
   );
 
-  await page.click(
-    "body > div._2dDPU.CkGkG > div.zZYga > div > article > header > div.o-MQd.z8cbW > div.PQo_0.RqtMr > div.e1e1d > span > a"
-  );
+  let result = await page.evaluate(async () => {
+    let username = document.querySelector(
+      "body > div._2dDPU.CkGkG > div.zZYga > div > article > header > div.o-MQd.z8cbW > div.PQo_0.RqtMr > div.e1e1d > span > a"
+    ).innerText;
+    let followings = [];
+    try {
+      let res = await fetch(`https://www.instagram.com/${username}/?__a=1`);
 
-  await page.waitForSelector(
-    "#react-root > section > main > div > header > section > ul > li:nth-child(3) > a"
-  );
+      res = await res.json();
+      let userId = res.graphql.user.id;
 
-  await page.click(
-    "#react-root > section > main > div > header > section > ul > li:nth-child(3) > a"
-  );
-
-  //scroll down
-  const scrollable_section = "body > div.RnEpo.Yx5HN > div > div > div.isgrP";
-
-  await page.waitForSelector("body > div.RnEpo.Yx5HN > div > div > div.isgrP");
-
-  await page.evaluate((selector) => {
-    let followQtd = Number(
-      // coleta a string com numero de seguindo, troca o ponto por vazio, e por fim transforma em numero
-      document
-        .querySelector(
-          "#react-root > section > main > div > header > section > ul > li:nth-child(3) > a > span"
+      let after = null,
+        has_next = true;
+      while (has_next) {
+        await fetch(
+          `https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=` +
+            encodeURIComponent(
+              JSON.stringify({
+                id: userId,
+                include_reel: true,
+                fetch_mutual: true,
+                first: 50,
+                after: after,
+              })
+            )
         )
-        .innerHTML.replace(".", "")
-    );
-    let followList = [];
-    const scrollableSection = document.querySelector(selector);
-    document.body.addEventListener(
-      "DOMSubtreeModified",
-      function () {
-        scrollableSection.scrollTop += 6000; // faz scroll down
-
-        followList = Array.from(
-          document.querySelectorAll(
-            "body > div.RnEpo.Yx5HN > div > div > div.isgrP > ul > div > li"
-          )
-        );
-        if (followList.length == followQtd) {
-          followList = followList.map(
-            (user) =>
-              user.querySelector("div > div.t2ksc > .enpQJ > .d7ByH > span > a")
-                .innerHTML
-          );
-          console.log(followList);
-        } else {
-          console.log("Testing");
-        }
-      },
-      false
-    );
-  }, scrollable_section);
+          .then((res) => res.json())
+          .then((res) => {
+            has_next = res.data.user.edge_follow.page_info.has_next_page;
+            after = res.data.user.edge_follow.page_info.end_cursor;
+            followings = followings.concat(
+              res.data.user.edge_follow.edges.map(({ node }) => {
+                return {
+                  username: node.username,
+                };
+              })
+            );
+          });
+      }
+    } catch (err) {
+      console.log("Invalid username");
+    }
+    return followings;
+  });
+  console.log(result);
   // await browser.close();
 })();
