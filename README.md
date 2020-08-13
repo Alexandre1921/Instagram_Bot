@@ -4,4 +4,4 @@ Como instalar
 git clone https://github.com/Alexandre1921/Instagram_Bot
 
 2) Instalar depêndencias e bibliotecas:
-yarn
+yarn add puppeteer-core@chrome-71
