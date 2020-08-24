@@ -41,76 +41,76 @@ const list = require("../leads/list");
     "body > div._2dDPU.CkGkG > div.zZYga > div > article > header > div.o-MQd.z8cbW > div.PQo_0.RqtMr > div.e1e1d > span > a"
   );
 
-  let username = await page.$eval(
-    "body > div._2dDPU.CkGkG > div.zZYga > div > article > header > div.o-MQd.z8cbW > div.PQo_0.RqtMr > div.e1e1d > span > a",
-    (user) => user.innerText
+  let username = await page.$$eval("img.FFVAD", (users) =>
+    users.map((user) => user.href)
   );
+  console.log(username);
 
-  if (list.find((v) => v == username) === undefined) {
-    let followings = await page.evaluate(
-      async (username, pages) => {
-        let followings = [];
-        try {
-          let res = await fetch(`https://www.instagram.com/${username}/?__a=1`);
+  // if (list.find((v) => v == username) === undefined) {
+  //   let followings = await page.evaluate(
+  //     async (username, pages) => {
+  //       let followings = [];
+  //       try {
+  //         let res = await fetch(`https://www.instagram.com/${username}/?__a=1`);
 
-          res = await res.json();
-          let userId = res.graphql.user.id;
+  //         res = await res.json();
+  //         let userId = res.graphql.user.id;
 
-          let after = null,
-            has_next = true;
-          while (has_next) {
-            await fetch(
-              `https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=` +
-                encodeURIComponent(
-                  JSON.stringify({
-                    id: userId,
-                    include_reel: true,
-                    fetch_mutual: true,
-                    first: 50,
-                    after,
-                  })
-                )
-            )
-              .then((res) => res.json())
-              .then((res) => {
-                has_next = res.data.user.edge_follow.page_info.has_next_page;
-                after = res.data.user.edge_follow.page_info.end_cursor;
-                followings = followings.concat(
-                  res.data.user.edge_follow.edges.map(({ node }) => {
-                    return node.username;
-                  })
-                );
-              });
-          }
-        } catch (err) {
-          console.log("Invalid username");
-        }
-        let match = false;
+  //         let after = null,
+  //           has_next = true;
+  //         while (has_next) {
+  //           await fetch(
+  //             `https://www.instagram.com/graphql/query/?query_hash=d04b0a864b4b54837c0d870b0e77e076&variables=` +
+  //               encodeURIComponent(
+  //                 JSON.stringify({
+  //                   id: userId,
+  //                   include_reel: true,
+  //                   fetch_mutual: true,
+  //                   first: 50,
+  //                   after,
+  //                 })
+  //               )
+  //           )
+  //             .then((res) => res.json())
+  //             .then((res) => {
+  //               has_next = res.data.user.edge_follow.page_info.has_next_page;
+  //               after = res.data.user.edge_follow.page_info.end_cursor;
+  //               followings = followings.concat(
+  //                 res.data.user.edge_follow.edges.map(({ node }) => {
+  //                   return node.username;
+  //                 })
+  //               );
+  //             });
+  //         }
+  //       } catch (err) {
+  //         console.log("Invalid username");
+  //       }
+  //       let match = false;
 
-        match =
-          [...new Set(pages.concat(followings))].length !=
-          followings.length + pages.length;
-        if (!match) {
-          return match;
-        }
-        return username;
-      },
-      username,
-      pages
-    );
+  //       match =
+  //         [...new Set(pages.concat(followings))].length !=
+  //         followings.length + pages.length;
+  //       if (!match) {
+  //         return match;
+  //       }
+  //       return username;
+  //     },
+  //     username,
+  //     pages
+  //   );
 
-    if (followings != false) {
-      list.push(followings);
-      fs.writeFile(`./leads/list.json`, JSON.stringify(list), "utf8", function (
-        err
-      ) {
-        if (err) {
-          console.log("An error occured while writing JSON Object to File.");
-          return console.log(err);
-        }
-        console.log("JSON file has been saved.");
-      });
-    }
-  }
-  await browser.close();
+  //   if (followings != false) {
+  //     list.push(followings);
+  //     fs.writeFile(`./leads/list.json`, JSON.stringify(list), "utf8", function (
+  //       err
+  //     ) {
+  //       if (err) {
+  //         console.log("An error occured while writing JSON Object to File.");
+  //         return console.log(err);
+  //       }
+  //       console.log("JSON file has been saved.");
+  //     });
+  //   }
+  // }
+  // await browser.close();
 })();
