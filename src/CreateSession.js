@@ -8,7 +8,7 @@ module.exports = async (page) => {
   if (existsSync(cookiesFilePath)) {
     console.log("Loading Session");
     await LoadSession(page, cookiesFilePath);
-    await page.goto("https://www.instagram.com");
+    await page.goto("https://www.facebook.com");
   } else {
     console.log("Creating Session");
     await Auth(page);
